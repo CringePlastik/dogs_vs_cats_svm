@@ -22,9 +22,9 @@ def load_images(n, img_dir, image_size=None, class_labels=None):
     for i in range(n):
         img = image_loader.get_one_image(labels=class_labels, new_size=image_size)
         gray_scaled = image_loader.rgb2gray(img["data"])
-        sobeled = image_loader.sobel_image(gray_scaled)
-        deskewed = deskew(sobeled, image_size[0])
-        hog = image_preprocessor.get_hog(deskewed)
+        # sobeled = image_loader.sobel_image(gray_scaled)
+        # deskewed = deskew(sobeled, image_size[0])
+        hog = image_preprocessor.get_hog(np.uint8(gray_scaled))
         data.append(hog)
         img_labels.append(img["target"])
     return np.array(data), np.array(img_labels)
@@ -50,9 +50,9 @@ def predict(img_name, model, dir_name, new_size=None):
     img = image_loader.get_one_image(new_size=new_size, path=img_name)
     image_preprocessor = ImagePreprocessing(img_size=new_size)
     gray_scaled = image_loader.rgb2gray(img["data"])
-    sobeled = image_loader.sobel_image(gray_scaled)
-    deskewed = deskew(sobeled, new_size[0])
-    hog = image_preprocessor.get_hog(deskewed)
+    # sobeled = image_loader.sobel_image(gray_scaled)
+    # deskewed = deskew(sobeled, new_size[0])
+    hog = image_preprocessor.get_hog(np.uint8(gray_scaled))
     return model.predict([hog])
 
 

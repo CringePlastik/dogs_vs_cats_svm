@@ -14,7 +14,7 @@ def deskew(img, SZ):
     return img
 
 
-def load_images(n, img_dir, image_size, class_labels=None):
+def load_images(n, img_dir, image_size=None, class_labels=None):
     data = []
     img_labels = []
     image_loader = ImageLoader(dir_name=img_dir)
@@ -34,7 +34,7 @@ def load_images(n, img_dir, image_size, class_labels=None):
 # clf = make_pipeline(StandardScaler(), PCA(n_components=2000), model)
 
 
-def learn(n_epochs, n_samples, clf, img_size, classes, train_dir):
+def learn(n_epochs, n_samples, clf, train_dir, img_size=None, classes=None):
     for i in range(n_epochs):
         hog_descriptors, labels = load_images(n_samples, image_size=img_size, class_labels=classes, img_dir=train_dir)
         train_n = int(0.9 * len(hog_descriptors))
@@ -45,7 +45,7 @@ def learn(n_epochs, n_samples, clf, img_size, classes, train_dir):
         del hog_descriptors, labels
 
 
-def predict(img_name, model, dir_name, new_size):
+def predict(img_name, model, dir_name, new_size=None):
     image_loader = ImageLoader(dir_name=dir_name)
     img = image_loader.get_one_image(new_size=new_size, path=img_name)
     image_preprocessor = ImagePreprocessing(img_size=new_size)

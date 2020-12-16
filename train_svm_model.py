@@ -1,21 +1,10 @@
 from image_loader import ImageLoader, ImagePreprocessing
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline, make_pipeline
-from sklearn.svm import SVC
 import numpy as np
 from sklearn.metrics import accuracy_score, classification_report
 import cv2
-import matplotlib.pyplot as plt
-
-img_size = (100, 100)
-train_dir = "images/train/train"
-test_dir = "images/test/test"
-classes = {"cat": 0, "dog": 1}
-SZ = img_size[0]
 
 
-def deskew(img):
+def deskew(img, SZ):
     m = cv2.moments(img)
     if abs(m['mu02']) < 1e-2:
         return img.copy()
@@ -34,18 +23,18 @@ def load_images(n, img_dir, image_size, class_labels=None):
         img = image_loader.get_one_image(labels=class_labels, new_size=image_size)
         gray_scaled = image_loader.rgb2gray(img["data"])
         sobeled = image_loader.sobel_image(gray_scaled)
-        deskewed = deskew(sobeled)
+        deskewed = deskew(sobeled, image_size[0])
         hog = image_preprocessor.get_hog(deskewed)
         data.append(hog)
         img_labels.append(img["target"])
     return np.array(data), np.array(img_labels)
 
 
-model = SVC(C=10.5, gamma=0.5)
-clf = make_pipeline(StandardScaler(), PCA(n_components=42), model)
+# model = SVC(C=8.5, gamma=0.5)
+# clf = make_pipeline(StandardScaler(), PCA(n_components=2000), model)
 
 
-def learn(n_epochs, n_samples, clf):
+def learn(n_epochs, n_samples, clf, img_size, classes, train_dir):
     for i in range(n_epochs):
         hog_descriptors, labels = load_images(n_samples, image_size=img_size, class_labels=classes, img_dir=train_dir)
         train_n = int(0.9 * len(hog_descriptors))
@@ -55,3 +44,18 @@ def learn(n_epochs, n_samples, clf):
         print(f'epoch: {i} \t Accuracy: {accuracy_score(clf.predict(hog_descriptors_test), labels_test)*100}')
         del hog_descriptors, labels
 
+
+def predict(img_name, model, dir_name, new_size):
+    image_loader = ImageLoader(dir_name=dir_name)
+    img = image_loader.get_one_image(new_size=new_size, path=img_name)
+    image_preprocessor = ImagePreprocessing(img_size=new_size)
+    gray_scaled = image_loader.rgb2gray(img["data"])
+    sobeled = image_loader.sobel_image(gray_scaled)
+    deskewed = deskew(sobeled, new_size[0])
+    hog = image_preprocessor.get_hog(deskewed)
+    return model.predict([hog])
+
+
+
+
+# learn(n_epochs=1, n_samples=25000, clf=clf)

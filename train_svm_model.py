@@ -56,6 +56,31 @@ def predict(img_name, model, dir_name, new_size=None):
     return model.predict([hog])
 
 
+def train_sgd(n_epoch, n_samples, clf, train_dir, img_size, classes):
+    image_loader = ImageLoader(dir_name=train_dir)
+    image_preproc = ImagePreprocessing(img_size=img_size)
+    for epoch in range(n_epoch):
+        for i in range(n_samples):
+            img = image_loader.get_one_image(labels=classes, new_size=img_size)
+            gray_scaled = image_loader.rgb2gray(img["data"])
+            train_sample = image_preproc.simple_preproc(gray_scaled)
+            clf.partial_fit([train_sample], [img["target"]], classes=list(classes.values()))
+            del img
+        if epoch % 10 == 0:
+            test_data = []
+            test_labels = []
+            for _ in range(1000):
+                test_img = image_loader.get_one_image(labels=classes, new_size=img_size)
+                gray_scaled = image_loader.rgb2gray(test_img["data"])
+                test_data.append(image_preproc.simple_preproc(gray_scaled))
+                test_labels.append(test_img["target"])
+            print(f"accuracy {accuracy_score(clf.predict(test_data), test_labels)*100}")
+            del test_data, test_labels
+
+
+
+
+
 
 
 # learn(n_epochs=1, n_samples=25000, clf=clf)

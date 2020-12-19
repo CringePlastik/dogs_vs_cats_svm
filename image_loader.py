@@ -67,6 +67,9 @@ class ImagePreprocessing:
     def resize_hog(self, hog):
         return np.reshape(hog, (hog.shape[0], ))
 
+    def simple_preproc(self, img):
+        return np.resize(img, (img.shape[0]*img.shape[1], ))/255.0
+
 
 
 

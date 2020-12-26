@@ -42,6 +42,42 @@ class ImageLoader:
         mag, angle = cv2.cartToPolar(gx, gy, angleInDegrees=True)
         return np.uint8(mag)
 
+    def get_batch(self, start, stop, labels=None, new_size=None, shuffle=None):
+        file_names = [os.path.join(self.dir_name, img) for img in os.listdir(self.dir_name)]
+        if shuffle:
+            np.random.seed(0)
+            np.random.shuffle(file_names)
+        needed_files = file_names[start:stop+1]
+        print(needed_files[0:10])
+        images = []
+        img_labels = []
+        for file in needed_files:
+            real_image_name = file.split("/")[-1]
+            label = None
+            if labels:
+                for class_name in labels:
+                    if class_name in real_image_name:
+                        label = labels[class_name]
+                if label is None:
+                    raise Exception("no class specified for %s" % real_image_name)
+            img_pixels = cv2.imread(file)
+            if not new_size:
+                images.append(img_pixels)
+                img_labels.append(label)
+            else:
+                img_pixels = cv2.resize(img_pixels, new_size, interpolation=cv2.INTER_CUBIC)
+                images.append(img_pixels)
+                img_labels.append(label)
+        return {"data": np.array(images), "target": np.array(img_labels)}
+
+
+
+
+
+
+
+
+
 
 class ImagePreprocessing:
     def __init__(self, img_size):
